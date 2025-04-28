@@ -46,11 +46,12 @@ def main():
         helper.close_empty_leases(session)
         net_position = helper.get_net_position(session)
         print(f"Net position: {net_position}")
+        print(f"Tick: {tick}")
 
         # Refining Model
 
         refining.refining_model(session)
-        
+    
         # Fundamental Model
 
         fundamental.fundamental_model(session)
@@ -62,8 +63,7 @@ def main():
         # Visualization
 
         # Extra
-        if tick % 10 == 0:
-            print(f"Tick: {tick}")
+        
         time.sleep(1)
 
 

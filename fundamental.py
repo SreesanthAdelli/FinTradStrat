@@ -60,18 +60,21 @@ def EIA_trade(session):
     print(f"Expected price move in CL: {expected_price_move:.2f} dollars")
 
     # Check current position
-    position_info = helper.get_positions(session)
-    current_position = position_info.get('CL-2F', 0)  # Default 0 if not in positions
+    net = helper.get_net_position(session)
 
+    
     TRADE_QUANTITY = 90
+
+
+    
 
     if expected_price_move > 0.2:
         # Bullish → Buy
-        max_allowed = POSITION_LIMIT/3 - current_position
-        if max_allowed <= 0:
-            print("Cannot buy more. Already at or above position limit.")
-            return
+        max_allowed = (POSITION_LIMIT - net)
         quantity = min(TRADE_QUANTITY, max_allowed)
+        quantity = quantity - quantity % 3
+
+        
         helper.place_order(session,'CL-2F', quantity/3, 'BUY', 'MARKET')
         helper.place_order(session,'CL-2F', quantity/3, 'BUY', 'MARKET')
         helper.place_order(session,'CL-2F', quantity/3, 'BUY', 'MARKET')
@@ -85,11 +88,13 @@ def EIA_trade(session):
 
     elif expected_price_move < -0.2:
         # Bearish → Sell
-        max_allowed = POSITION_LIMIT/3 + current_position  # current_position negative if short
-        if max_allowed <= 0:
-            print("Cannot sell more. Already at or below position limit.")
-            return
+        
+        max_allowed = (POSITION_LIMIT + net)
         quantity = min(TRADE_QUANTITY, max_allowed)
+        quantity = quantity - quantity % 3
+
+        
+
         helper.place_order(session,'CL-2F', quantity/3, 'SELL', 'MARKET')
         helper.place_order(session,'CL-2F', quantity/3, 'SELL', 'MARKET')
         helper.place_order(session, 'CL-2F', quantity/3, 'SELL', 'MARKET')
@@ -135,9 +140,6 @@ def other_news_trade(session):
         TRADE_QUANTITY = 50
 
         max_allowed = POSITION_LIMIT - current_position
-        if max_allowed <= 0:
-            print("Cannot buy more. Position limit hit.")
-            return
         quantity = min(TRADE_QUANTITY, max_allowed)
         helper.place_order(session, ticker='CL-2F', quantity=quantity, action='BUY', order_type='MARKET')
         print(f"Placed BUY order for {quantity} contracts of CL-2F on other news.")
