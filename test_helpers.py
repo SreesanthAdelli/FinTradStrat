@@ -100,6 +100,9 @@ def test_wait_and_close_refinery(session):
     close_refinery_response = helper.wait_and_close_refinery(session, lease_id, lease_finish_tick)
     print(f"Refinery lease closed: {close_refinery_response}")
 
+def test_lease_use_transport(session):
+    helper.lease_use_transport(session, "CS-NYC-PIPE", "CL", 10)
+
 
 if __name__ == "__main__":
     s = initialize_session()
@@ -115,7 +118,7 @@ if __name__ == "__main__":
 
     # time.sleep(3)
 
-    test_place_order(s)
+    # test_place_order(s)
 
     # time.sleep(3)
 
@@ -128,5 +131,7 @@ if __name__ == "__main__":
     # test_close_unused_storage_leases(s)
     # test_get_refinery_lease_info(s)
     # test_wait_and_close_refinery(s)
+
+    test_lease_use_transport(s)
 
     

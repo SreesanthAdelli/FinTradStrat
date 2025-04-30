@@ -7,6 +7,7 @@ and refinery operations.
 """
 
 import requests
+import re
 from config import API_BASE_URL
 
 # --- Data Retrieval Functions ---
@@ -500,7 +501,6 @@ def extract_number_from_text(text):
     Returns:
         float: Extracted number.
     """
-    import re
     match = re.search(r"[-+]?\d*\.\d+|\d+", text)
     if match:
         return float(match.group())
@@ -569,14 +569,14 @@ def fundamental_EIA_report(session):
 
 # --- Transportation Functions ---
 
-def lease_use_transport(session, ticker, quantity):
+def lease_use_transport(session, ticker, from1, quantity):
     """
     Lease a pipeline for transporting a commodity.
 
     Args:
         session (requests.Session): Authenticated session for API requests.
-        from_ticker (str): Ticker of commodity to transport (e.g., 'CL-AK').
         quantity (int): Number of units to transport.
+        from1 (str): Ticker for the commodity being transported (e.g., 'CL').
         pipeline_ticker (str): Ticker for the pipeline lease (e.g., 'AK-CS-PIPE').
 
     Returns:
@@ -588,10 +588,12 @@ def lease_use_transport(session, ticker, quantity):
 
     payload = {
         'ticker': ticker,
+        'from1': from1,
         'quantity1': quantity,
     }
 
     resp = session.post(f'{API_BASE_URL}/leases', params=payload)
+    
     if not resp.ok:
         raise ApiException(f"Failed to lease transport for {ticker}: {resp.status_code}")
     

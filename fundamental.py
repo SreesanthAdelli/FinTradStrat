@@ -1,5 +1,7 @@
 import helper
 import time
+import globals
+import re
 
 # === MEMORY ===
 
@@ -113,44 +115,37 @@ def EIA_trade(session):
     last_traded_news_id = news_id
 
 
-def other_news_trade(session):
+
+def pipeline_news(session):
     """
-    Trading model based on other types of news.
-    For now: very simple example based on keyword 'STRIKE' or 'HURRICANE'.
+    Pipeline news model to check for any pipeline-related news.
+    For now: very simple example based on keyword 'PIPELINE'.
     """
-    global other_active_trade
 
     news_items = helper.get_latest_news(session)
 
-    if not news_items:
-        print("No news available.")
-        return
+    
 
     latest_news = news_items[0]
-    headline = latest_news.get('headline', '').upper()
+    if latest_news.get('ticker') == "AK-CS-PIPE":
+        print("Pipeline news detected.")
+        headline = latest_news.get('headline', '').upper()
+        match = re.search(r"\$?([\d,]+)", headline)
+        number_str = match.group(1)
+        number = int(number_str.replace(',', ''))
+        print(f"AK-CS-PIPE lease price updated to {number}")
+        globals.AK_CS_PIPE = number
+    if  latest_news.get('ticker') == "CS-NYC-PIPE":
+        print("Pipeline news detected.")
+        headline = latest_news.get('headline', '').upper()
+        match = re.search(r"\$?([\d,]+)", headline)
+        number_str = match.group(1)
+        number = int(number_str.replace(',', ''))
+        print(f"CS-NYC-PIPE lease price updated to {number}")
+        globals.CS_NYC_PIPE = number
 
-    if 'STRIKE' in headline or 'HURRICANE' in headline:
-        # Major supply disruption → bullish
-        print(f"Important news detected: {headline}")
 
-        # Check position
-        position_info = helper.get_positions(session)
-        current_position = position_info.get('CL-2F', 0)
-
-        TRADE_QUANTITY = 50
-
-        max_allowed = POSITION_LIMIT - current_position
-        quantity = min(TRADE_QUANTITY, max_allowed)
-        helper.place_order(session, ticker='CL-2F', quantity=quantity, action='BUY', order_type='MARKET')
-        print(f"Placed BUY order for {quantity} contracts of CL-2F on other news.")
-
-        other_active_trade = {
-            "entry_tick": helper.get_tick(session),
-            "side": 'BUY',
-            "quantity": quantity
-        }
-    else:
-        print("No tradable other news detected.")
+        
 
 
 def fundamental_model(session):
@@ -167,15 +162,14 @@ def fundamental_model(session):
         if current_tick - eia_active_trade["entry_tick"] >= HOLD_TICKS:
             print("Closing EIA trade after 20 ticks.")
 
-            pos_info = helper.get_positions(session)
-            cl2f_pos = pos_info.get('CL-2F', 0)
 
-            if cl2f_pos != 0:
-                side = 'SELL' if cl2f_pos > 0 else 'BUY'
-                helper.place_order(session,'CL-2F', eia_active_trade["quantity"]/3, action=side, order_type='MARKET')
-                helper.place_order(session,'CL-2F', eia_active_trade["quantity"]/3, action=side, order_type='MARKET')
-                helper.place_order(session,'CL-2F', eia_active_trade["quantity"]/3, action=side, order_type='MARKET')
-                print(f"Closed EIA position: {side} {abs(cl2f_pos)} contracts of CL-2F.")
+            side = "BUY" if eia_active_trade["side"] == "SELL" else "SELL"
+            quantity = eia_active_trade["quantity"]
+            
+            helper.place_order(session,'CL-2F', quantity/3, action=side, order_type='MARKET')
+            helper.place_order(session,'CL-2F', quantity/3, action=side, order_type='MARKET')
+            helper.place_order(session,'CL-2F', quantity/3, action=side, order_type='MARKET')
+            print(f"Closed EIA position: {side} {quantity} contracts of CL-2F.")
 
             eia_active_trade = {
                 "entry_tick": None,
@@ -183,25 +177,7 @@ def fundamental_model(session):
                 "quantity": 0
             }
 
-    # === Handle closing other news trade ===
-    if other_active_trade["entry_tick"] is not None:
-        if current_tick - other_active_trade["entry_tick"] >= HOLD_TICKS:
-            print("Closing Other News trade after 20 ticks.")
-
-            pos_info = helper.get_positions(session)
-            cl2f_pos = pos_info.get('CL-2F', 0)
-
-            if cl2f_pos != 0:
-                side = 'SELL' if cl2f_pos > 0 else 'BUY'
-                helper.place_order(session, ticker='CL-2F', quantity=abs(cl2f_pos), action=side, order_type='MARKET')
-                print(f"Closed Other News position: {side} {abs(cl2f_pos)} contracts of CL-2F.")
-
-            other_active_trade = {
-                "entry_tick": None,
-                "side": None,
-                "quantity": 0
-            }
 
     # === Try to open new trades ===
     EIA_trade(session)
-    other_news_trade(session)
+    pipeline_news(session)

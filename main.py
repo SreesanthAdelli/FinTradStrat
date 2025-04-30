@@ -7,9 +7,9 @@ initializing sessions, strategies, and visual dashboards.
 
 import requests
 import helper
-import visualization
 import refining
 import fundamental
+import transportation
 import time
 from config import API_KEY, API_BASE_URL
 
@@ -58,19 +58,13 @@ def main():
 
         # Transportation Model
 
+        transportation.transportation_model(session)
+        
         # Storage Model
-
-        # Visualization
 
         # Extra
         
-        time.sleep(1)
-
-
-
-    
-    # Future: Call visualization/live dashboards etc.
-    # visualization.run_live_dashboard(session)
+        time.sleep(.6)
 
 if __name__ == "__main__":
     main()

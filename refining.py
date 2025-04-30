@@ -16,7 +16,7 @@ def should_refine(ho_price, rb_price, cl_price):
         float: Expected profit after refining costs.
     """
     REFINING_COST = 300_000
-    MIN_PROFIT_THRESHOLD = 20_000
+    MIN_PROFIT_THRESHOLD = 40_000
     CONTRACTS = 30
     BARRELS_PER_CONTRACT = 1000
     BBL_TO_GALLONS = 42_000
@@ -49,8 +49,6 @@ def try_refining(session):
 
     print(f"Expected profit from refining: ${expected_profit:,.2f}")
 
-    # Update the live visualization with the current expected profit
-    visualization.refining_expected_profit(expected_profit)
 
     if refine_now:
         print("Refining opportunity found!")
@@ -63,11 +61,13 @@ def try_refining(session):
         
 
         if net_position > 70:
+            print("Net Position is greater than 70. Shorting Futures first")
             helper.place_order(session, 'CL-2F', 30, 'SELL', 'MARKET')
             print("Placed SELL order for 30 contracts of CL-2F.")
             helper.place_order(session, 'CL', 30, 'BUY', 'MARKET')
             print("Placed BUY order for 30 contracts of CL.")
         else:
+            print("Net Position is less than 70. Buying Spot first")
             helper.place_order(session, 'CL', 30, 'BUY', 'MARKET')
             print("Placed BUY order for 30 contracts of CL.")
             helper.place_order(session, 'CL-2F', 30, 'SELL', 'MARKET')
