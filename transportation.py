@@ -228,7 +228,7 @@ def transportation_model(session):
                 print("Too late to buy storage. Incurred Distressed Prices")
             else:
                 for i in range(10):
-                    helper.lease_storage(session, 'CL-STORAGE')
+                    helper.lease_storage(session, 'NYC-STORAGE')
 
             while not helper.get_position_ticker(session, 'CL-NYC') == 100:
                 time.sleep(0.2)
