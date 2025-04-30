@@ -189,20 +189,20 @@ def transportation_model(session):
             for i in range(int(quantity/10)):
                 helper.lease_storage(session, 'CL-STORAGE')
             print("Closing AK transportation hedge and spot position after 30 ticks.")
-            time.sleep(2)
+            time.sleep(3)
 
             if net > 70:
                 # Close the spot position first
-                for i in range(0, int(quantity/10)):
-                    helper.place_order(session, 'CL', 10, 'SELL', 'MARKET')
+                for i in range(4):
+                    helper.place_order(session, 'CL', 25, 'SELL', 'MARKET')
                     print(f"Closed Spot position: SELL 10 CL-2F")
-                    helper.place_order(session, 'CL-2F', 10, 'BUY', 'MARKET')
+                    helper.place_order(session, 'CL-2F', 25, 'BUY', 'MARKET')
                     print(f"Closed Futures position: BUY 10 CL-2F")
             else:
                 for i in range(0, int(quantity/10)):
-                    helper.place_order(session, 'CL-2F', 10, 'BUY', 'MARKET')
+                    helper.place_order(session, 'CL-2F', 25, 'BUY', 'MARKET')
                     print(f"Closed Futures position: BUY 10 CL-2F")
-                    helper.place_order(session, 'CL', 10, 'SELL', 'MARKET')
+                    helper.place_order(session, 'CL', 25, 'SELL', 'MARKET')
                     print(f"Closed Spot position: SELL 10 CL")
 
             transportation_trade_info_AK = {
@@ -217,19 +217,19 @@ def transportation_model(session):
             for _ in range(int(quantity/10)):
                 helper.lease_storage(session, 'NYC-STORAGE')
             print("Closing NYC transportation hedge and spot position after 30 ticks.")
-            time.sleep(2)
+            time.sleep(3)
             if net > 70:
                 # Close the spot position first
-                for i in range(0, int(transportation_trade_info_NYC["quantity"]/10)):
-                    helper.place_order(session, 'CL-NYC', 10, 'SELL', 'MARKET')
+                for i in range(4):
+                    helper.place_order(session, 'CL-NYC', 25, 'SELL', 'MARKET')
                     print(f"Closed Spot position: SELL 10 CL-NYC")
-                    helper.place_order(session, 'CL-2F', 10, 'BUY', 'MARKET')
+                    helper.place_order(session, 'CL-2F', 25, 'BUY', 'MARKET')
                     print(f"Closed Futures position: BUY 10 CL-2F")
             else:
-                for i in range(0, int(transportation_trade_info_NYC["quantity"]/10)):
-                    helper.place_order(session, 'CL-2F', 10, 'BUY', 'MARKET')
+                for i in range(4):
+                    helper.place_order(session, 'CL-2F', 25, 'BUY', 'MARKET')
                     print(f"Closed Futures position: BUY 10 CL-2F")
-                    helper.place_order(session, 'CL-NYC', 10, 'SELL', 'MARKET')
+                    helper.place_order(session, 'CL-NYC', 25, 'SELL', 'MARKET')
                     print(f"Closed Spot position: SELL 10 CL-NYC")
 
             transportation_trade_info_NYC = {

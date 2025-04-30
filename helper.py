@@ -26,7 +26,7 @@ def get_position_ticker(session, ticker):
 
     resp = session.get(f'{API_BASE_URL}/securities')
     if not resp.ok:
-        raise ApiException(f"Failed to get securities list: {resp.status_code}")
+        raise ApiException(f"Failed to get securities list: {resp.text}")
     
     securities_list = resp.json()
     for security in securities_list:
@@ -51,7 +51,7 @@ def get_positions(session):
 
     resp = session.get(f'{API_BASE_URL}/securities')
     if not resp.ok:
-        raise ApiException(f"Failed to get securities list: {resp.status_code}")
+        raise ApiException(f"Failed to get securities list: {resp.text}")
     
     securities_list = resp.json()
     positions = {security['ticker']: security.get('position', 0) for security in securities_list}
@@ -78,7 +78,7 @@ def ticker_bid_ask(session, ticker):
     params = {'ticker': ticker}
     resp = session.get(f'{API_BASE_URL}/securities/book', params=params)
     if not resp.ok:
-        raise ApiException(f"Failed to get book for {ticker}: {resp.status_code}")
+        raise ApiException(f"Failed to get book for {ticker}: {resp.text}")
     
     book = resp.json()
     bids = book.get('bids', [])
@@ -106,7 +106,7 @@ def get_tick(session):
 
     resp = session.get(f'{API_BASE_URL}/case')
     if not resp.ok:
-        raise ApiException(f"Failed to get case info: {resp.status_code}")
+        raise ApiException(f"Failed to get case info: {resp.text}")
     
     case_info = resp.json()
     return case_info.get('tick', 0)
@@ -130,7 +130,7 @@ def get_orders(session, status):
     params = {'status': status}
     resp = session.get(f'{API_BASE_URL}/orders', params=params)
     if not resp.ok:
-        raise ApiException(f"Failed to get orders with status {status}: {resp.status_code}")
+        raise ApiException(f"Failed to get orders with status {status}: {resp.text}")
     
     return resp.json()
 
@@ -151,7 +151,7 @@ def get_nlv(session):
 
     resp = session.get(f'{API_BASE_URL}/trader')
     if not resp.ok:
-        raise ApiException(f"Failed to get trader info: {resp.status_code}")
+        raise ApiException(f"Failed to get trader info: {resp.text}")
     
     trader_info = resp.json()
     return trader_info.get('nlv', 0.0)
@@ -172,7 +172,7 @@ def get_net_position(session):
 
     resp = session.get(f'{API_BASE_URL}/limits')
     if not resp.ok:
-        raise ApiException(f"Failed to get securities list: {resp.status_code}")
+        raise ApiException(f"Failed to get securities list: {resp.text}")
     
     limits = resp.json()
     
@@ -196,7 +196,7 @@ def get_portfolio(session):
 
     resp = session.get(f'{API_BASE_URL}/trader')
     if not resp.ok:
-        raise ApiException(f"Failed to get trader info: {resp.status_code}")
+        raise ApiException(f"Failed to get trader info: {resp.text}")
     
     return resp.json()
 
@@ -230,7 +230,7 @@ def place_order(session, ticker, quantity, action, order_type='MARKET'):
     resp = session.post(f'{API_BASE_URL}/orders', params=payload)
 
     if not resp.ok:
-        raise ApiException(f"Failed to place order for {ticker}: {resp.status_code}")
+        raise ApiException(f"Failed to place order for {ticker}: {resp.text}")
     
     return resp.json()
 
@@ -253,7 +253,7 @@ def cancel_order(session, order_id):
 
     resp = session.delete(f'{API_BASE_URL}/orders/{order_id}')
     if not resp.ok:
-        raise ApiException(f"Failed to cancel order {order_id}: {resp.status_code}")
+        raise ApiException(f"Failed to cancel order {order_id}: {resp.text}")
     
     return resp.json()
 
@@ -277,7 +277,7 @@ def lease_storage(session, ticker):
 
     resp = session.post(f'{API_BASE_URL}/leases', params={'ticker': ticker})
     if not resp.ok:
-        raise ApiException(f"Failed to lease storage for {ticker}: {resp.status_code}")
+        raise ApiException(f"Failed to lease storage for {ticker}: {resp.text}")
     
     return resp.json()
 
@@ -299,7 +299,7 @@ def lease_refinery(session):
 
     resp = session.post(f'{API_BASE_URL}/leases', params={'ticker': 'CL-REFINERY'})
     if not resp.ok:
-        raise ApiException("Failed to lease refinery: {resp.status_code}")
+        raise ApiException("Failed to lease refinery: {resp.text}")
     
     return resp.json()
 
@@ -330,7 +330,7 @@ def use_refinery(session, from_ticker, quantity):
             print(leaseid)
             session.post(f'{API_BASE_URL}/leases/{leaseid}', params=payload)
     if not resp.ok:
-        raise ApiException(f"Failed to use refinery for {from_ticker}: {resp.status_code}")
+        raise ApiException(f"Failed to use refinery for {from_ticker}: {resp.text}")
     
     return resp.json()
 
@@ -353,7 +353,7 @@ def close_unused_storage_leases(session):
 
     resp = session.get(f'{API_BASE_URL}/leases')
     if not resp.ok:
-        raise ApiException(f"Failed to get leases: {resp.status_code}")
+        raise ApiException(f"Failed to get leases: {resp.text}")
     
     lease_info = resp.json()
     closed_lease_ids = []
@@ -384,7 +384,7 @@ def get_refinery_lease_info(session):
 
     resp = session.get(f'{API_BASE_URL}/leases')
     if not resp.ok:
-        raise ApiException(f"Failed to get leases: {resp.status_code}")
+        raise ApiException(f"Failed to get leases: {resp.text}")
     
     lease_info = resp.json()
     for lease in lease_info:
@@ -420,7 +420,7 @@ def wait_and_close_refinery(session, lease_id, lease_finish_tick):
     
     resp = session.delete(f'{API_BASE_URL}/leases/{lease_id}')
     if not resp.ok:
-        raise ApiException(f"Failed to close refinery lease {lease_id}: {resp.status_code}")
+        raise ApiException(f"Failed to close refinery lease {lease_id}: {resp.text}")
     
     return resp.json()
 
@@ -441,7 +441,7 @@ def close_refinery(session, lease_id):
     if lease_id is None:
         resp = session.get(f'{API_BASE_URL}/leases')
         if not resp.ok:
-            raise ApiException(f"Failed to get leases: {resp.status_code}")
+            raise ApiException(f"Failed to get leases: {resp.text}")
         
         lease_info = resp.json()
         for lease in lease_info:
@@ -452,7 +452,7 @@ def close_refinery(session, lease_id):
     else:
         resp = session.delete(f'{API_BASE_URL}/leases/{lease_id}')
         if not resp.ok:
-            raise ApiException(f"Failed to close refinery lease {lease_id}: {resp.status_code}")
+            raise ApiException(f"Failed to close refinery lease {lease_id}: {resp.text}")
     
     return resp.json()
 
@@ -472,7 +472,7 @@ def close_empty_leases(session):
 
     resp = session.get(f'{API_BASE_URL}/leases')
     if not resp.ok:
-        raise ApiException(f"Failed to get leases: {resp.status_code}")
+        raise ApiException(f"Failed to get leases: {resp.text}")
     
     lease_info = resp.json()
     closed_lease_ids = []
@@ -595,7 +595,7 @@ def lease_use_transport(session, ticker, from1, quantity):
     resp = session.post(f'{API_BASE_URL}/leases', params=payload)
     
     if not resp.ok:
-        raise ApiException(f"Failed to lease transport for {ticker}: {resp.status_code}")
+        raise ApiException(f"Failed to lease transport for {ticker}: {resp.text}")
     
     return resp.json()
 

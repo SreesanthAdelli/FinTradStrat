@@ -124,7 +124,9 @@ def pipeline_news(session):
 
     news_items = helper.get_latest_news(session)
 
-    
+    if news_items is None or len(news_items) == 0:
+        print("No news available.")
+        return
 
     latest_news = news_items[0]
     if latest_news.get('ticker') == "AK-CS-PIPE":
