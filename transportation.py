@@ -7,13 +7,15 @@ import globals
 transportation_trade_info_AK = {
     "active": False,
     "entry_tick": None,
-    "quantity": 0
+    "quantity": 0,
+    "current_time": None
 }
 
 transportation_trade_info_NYC = {
     "active": False,
     "entry_tick": None,
-    "quantity": 0
+    "quantity": 0,
+    "current_time": None    
 }
 
 
@@ -92,6 +94,7 @@ def try_transport_AK_CS(session):
 
         tick = helper.get_tick(session)
         current_tick = tick
+        current_time = time.time()
 
         quantity = TRADE_QUANTITY
 
@@ -103,7 +106,6 @@ def try_transport_AK_CS(session):
                 print(f"Bought spot position: BUY 10 CL-AK")
                 helper.place_order(session, 'CL-2F', 10, 'SELL', 'MARKET')
                 print(f"Shorted futures position: SELL 10 CL-2F")
-                time.sleep(SLEEP_TIME)
                 helper.lease_use_transport(session, 'AK-CS-PIPE', 'CL-AK', 10)
         else:
             for i in range(int(quantity/10)):
@@ -111,12 +113,12 @@ def try_transport_AK_CS(session):
                 print(f"Shorted futures position: SELL 10 CL-2F")
                 helper.place_order(session, 'CL-AK', 10, 'BUY', 'MARKET')
                 print(f"Bought spot position: BUY 10 CL-AK")
-                time.sleep(SLEEP_TIME)
                 helper.lease_use_transport(session, 'AK-CS-PIPE', 'CL-AK', 10)
 
         transportation_trade_info_AK = {
                 "active": True,
                 "entry_tick": current_tick,
+                "current_time": current_time,
                 "quantity": TRADE_QUANTITY
             }
 
@@ -134,6 +136,7 @@ def try_transport_CS_NYC(session):
     global transportation_trade_info_NYC
     tick = helper.get_tick(session)
     current_tick = tick
+    current_time = time.time()
     # Check if transport is profitable
     if should_transport_CS_NYC(session):
 
@@ -148,7 +151,6 @@ def try_transport_CS_NYC(session):
                 print(f"Bought spot position: BUY 10 CL-AK")
                 helper.place_order(session, 'CL-2F', 10, 'SELL', 'MARKET')
                 print(f"Shorted futures position: SELL 10 CL-2F")
-                time.sleep(SLEEP_TIME)
                 helper.lease_use_transport(session, 'CS-NYC-PIPE', 'CL', 10)
         else:
             for i in range(int(quantity/10)):
@@ -156,12 +158,12 @@ def try_transport_CS_NYC(session):
                 print(f"Shorted futures position: SELL 10 CL-2F")
                 helper.place_order(session, 'CL', 10, 'BUY', 'MARKET')
                 print(f"Bought spot position: BUY 10 CL")
-                time.sleep(SLEEP_TIME)
                 helper.lease_use_transport(session, 'CS-NYC-PIPE', 'CL', 10)
 
         transportation_trade_info_NYC = {
                 "active": True,
                 "entry_tick": current_tick,
+                "current_time": current_time,
                 "quantity": TRADE_QUANTITY
             }
 
@@ -183,61 +185,79 @@ def transportation_model(session):
     net = helper.get_net_position(session)
 
     if transportation_trade_info_AK["active"]:
-        if current_tick - transportation_trade_info_AK["entry_tick"] >= 27:
+        if time.time() - transportation_trade_info_AK["current_time"] >= 26:
             print("Closing transportation hedge and spot position after 30 ticks.")
-            quantity = transportation_trade_info_AK["quantity"]
-            for i in range(int(quantity/10)):
-                helper.lease_storage(session, 'CL-STORAGE')
-            print("Closing AK transportation hedge and spot position after 30 ticks.")
-            time.sleep(3)
+            print(f"{30 - (time.time() - transportation_trade_info_AK['current_time'])} seconds left in transportation") 
+            if time.time() - transportation_trade_info_AK["current_time"] >= 29.5:
+                print("Too late to buy storage. Incurred Distressed Prices")
+            else:
+                for i in range(10):
+                    helper.lease_storage(session, 'CL-STORAGE')
+
+            while not helper.get_position_ticker(session, 'CL') == 100:
+                time.sleep(0.2)
+                print("Waiting for position to be 100 CL")
 
             if net > 70:
-                # Close the spot position first
-                for i in range(4):
+                for i in range(1, 5):
                     helper.place_order(session, 'CL', 25, 'SELL', 'MARKET')
-                    print(f"Closed Spot position: SELL 10 CL-2F")
+                    print(f"Closed Spot ({i}) position: SELL 25 CL-2F")
                     helper.place_order(session, 'CL-2F', 25, 'BUY', 'MARKET')
-                    print(f"Closed Futures position: BUY 10 CL-2F")
+                    print(f"Closed Futures ({i}) position: BUY 25 CL-2F")
             else:
-                for i in range(0, int(quantity/10)):
+                for i in range(1, 5):
                     helper.place_order(session, 'CL-2F', 25, 'BUY', 'MARKET')
-                    print(f"Closed Futures position: BUY 10 CL-2F")
+                    print(f"Closed Futures ({i}) position: BUY 10 CL-2F")
                     helper.place_order(session, 'CL', 25, 'SELL', 'MARKET')
-                    print(f"Closed Spot position: SELL 10 CL")
+                    print(f"Closed Spot ({i}) position: SELL 25 CL")
 
             transportation_trade_info_AK = {
                 "active": False,
-                "AL or NYC": None,
                 "entry_tick": None,
-                "quantity": 0
+                "quantity": 0,
+                "current_time": None
             }
+            return None
+        else:
+            print(f"{30 - (time.time() - transportation_trade_info_AK['current_time'])} seconds left in transportation") 
     if transportation_trade_info_NYC["active"]:
-        if current_tick - transportation_trade_info_NYC["entry_tick"] >= 27:
-            quantity = transportation_trade_info_NYC["quantity"]
-            for _ in range(int(quantity/10)):
-                helper.lease_storage(session, 'NYC-STORAGE')
-            print("Closing NYC transportation hedge and spot position after 30 ticks.")
-            time.sleep(3)
-            if net > 70:
-                # Close the spot position first
-                for i in range(4):
-                    helper.place_order(session, 'CL-NYC', 25, 'SELL', 'MARKET')
-                    print(f"Closed Spot position: SELL 10 CL-NYC")
-                    helper.place_order(session, 'CL-2F', 25, 'BUY', 'MARKET')
-                    print(f"Closed Futures position: BUY 10 CL-2F")
+        if time.time() - transportation_trade_info_NYC["current_time"] >= 26:
+            print("Closing transportation hedge and spot position after 30 ticks.")
+            print(f"{30 - (time.time() - transportation_trade_info_NYC['current_time'])} seconds left in transportation") 
+            if time.time() - transportation_trade_info_NYC["current_time"] >= 29.5:
+                print("Too late to buy storage. Incurred Distressed Prices")
             else:
-                for i in range(4):
-                    helper.place_order(session, 'CL-2F', 25, 'BUY', 'MARKET')
-                    print(f"Closed Futures position: BUY 10 CL-2F")
+                for i in range(10):
+                    helper.lease_storage(session, 'CL-STORAGE')
+
+            while not helper.get_position_ticker(session, 'CL-NYC') == 100:
+                time.sleep(0.2)
+                print("Waiting for position to be 100 CL-NYC")
+
+            if net > 70:
+                for i in range(1, 5):
                     helper.place_order(session, 'CL-NYC', 25, 'SELL', 'MARKET')
-                    print(f"Closed Spot position: SELL 10 CL-NYC")
+                    print(f"Closed Spot ({i}) position: SELL 25 CL-NYC")
+                    helper.place_order(session, 'CL-2F', 25, 'BUY', 'MARKET')
+                    print(f"Closed Futures ({i}) position: BUY 25 CL-2F")
+            else:
+                for i in range(1, 5):
+                    helper.place_order(session, 'CL-2F', 25, 'BUY', 'MARKET')
+                    print(f"Closed Futures ({i}) position: BUY 25 CL-2F")
+                    helper.place_order(session, 'CL-NYC', 25, 'SELL', 'MARKET')
+                    print(f"Closed Spot ({i}) position: SELL 25 CL-NYC")
+
 
             transportation_trade_info_NYC = {
                 "active": False,
-                "AL or NYC": None,
                 "entry_tick": None,
-                "quantity": 0
+                "quantity": 0,
+                "current_time": None
             }
+            return None
+        else:
+            print(f"{30 - (time.time() - transportation_trade_info_NYC['current_time'])} seconds left in transportation") 
+    
     if transportation_trade_info_AK["active"] == False:
         try_transport_AK_CS(session)
     if transportation_trade_info_NYC["active"] == False:

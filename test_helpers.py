@@ -132,6 +132,15 @@ if __name__ == "__main__":
     # test_get_refinery_lease_info(s)
     # test_wait_and_close_refinery(s)
 
-    test_lease_use_transport(s)
+    # test_lease_use_transport(s)
+    for _ in range(100):
+        helper.place_order(s, 'CL', 25, 'BUY', 'MARKET')
+        print("Order placed successfully.")
+        helper.place_order(s, 'CL', 25, 'SELL', 'MARKET')
+        print("Order placed successfully.")
+    helper.place_order(s, 'CL', 25, 'BUY', 'MARKET')
+    print("Order placed successfully.")
+    helper.place_order(s, 'CL', 25, 'SELL', 'MARKET')
+    print("Order placed successfully.")
 
     
