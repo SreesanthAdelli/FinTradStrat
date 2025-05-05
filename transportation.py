@@ -19,9 +19,8 @@ transportation_trade_info_NYC = {
 }
 
 
-MIN_PROFIT_THRESHOLD = 5000 # Minimum profit threshold for transportation
+MIN_PROFIT_THRESHOLD = 3500 # Minimum profit threshold for transportation
 TRADE_QUANTITY = 100 # Quantity of crude oil to transport
-SLEEP_TIME = 0
 
 def should_transport_AK_CS(session):
     """
@@ -188,7 +187,7 @@ def transportation_model(session):
         if time.time() - transportation_trade_info_AK["current_time"] >= 26:
             print("Closing transportation hedge and spot position after 30 ticks.")
             print(f"{30 - (time.time() - transportation_trade_info_AK['current_time'])} seconds left in transportation") 
-            if time.time() - transportation_trade_info_AK["current_time"] >= 29.5:
+            if time.time() - transportation_trade_info_AK["current_time"] >= 29:
                 print("Too late to buy storage. Incurred Distressed Prices")
             else:
                 for i in range(10):
@@ -224,7 +223,7 @@ def transportation_model(session):
         if time.time() - transportation_trade_info_NYC["current_time"] >= 26:
             print("Closing transportation hedge and spot position after 30 ticks.")
             print(f"{30 - (time.time() - transportation_trade_info_NYC['current_time'])} seconds left in transportation") 
-            if time.time() - transportation_trade_info_NYC["current_time"] >= 29.5:
+            if time.time() - transportation_trade_info_NYC["current_time"] >= 29:
                 print("Too late to buy storage. Incurred Distressed Prices")
             else:
                 for i in range(10):

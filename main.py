@@ -10,6 +10,7 @@ import helper
 import refining
 import fundamental
 import transportation
+import storage
 import time
 from config import API_KEY, API_BASE_URL
 
@@ -30,9 +31,7 @@ def main():
     Main orchestration function for running the trading system.
 
     - Initialize session
-    - Run refining strategy
-    - Run live dashboards
-    - (Future) Initialize models, strategies, risk checks, etc.
+    - Run each strategy
 
     Returns:
         None
@@ -61,6 +60,8 @@ def main():
         transportation.transportation_model(session)
         
         # Storage Model
+
+        storage.storage_model(session)
 
         # Extra
         

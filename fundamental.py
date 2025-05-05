@@ -27,8 +27,20 @@ HOLD_TICKS = 20  # Number of ticks to hold after entry
 
 def EIA_trade(session):
     """
-    Trading model based on EIA news report.
+    Executes trades based on the EIA (Energy Information Administration) report.
+
+    This function retrieves the latest news, checks if it is an EIA report, and calculates
+    the expected price movement based on the report's data. Depending on the calculated
+    price movement, it places buy or sell orders for crude oil futures (CL-2F) while
+    respecting position limits and trade quantity constraints.
+
+    Args:
+        session: The trading session object used to interact with the trading platform.
+
+    Returns:
+        None
     """
+    
     global last_traded_news_id, eia_active_trade
 
     news_items = helper.get_latest_news(session)
@@ -119,7 +131,7 @@ def EIA_trade(session):
 def pipeline_news(session):
     """
     Pipeline news model to check for any pipeline-related news.
-    For now: very simple example based on keyword 'PIPELINE'.
+    Very simple model based on keyword 'PIPELINE'.
     """
 
     news_items = helper.get_latest_news(session)
